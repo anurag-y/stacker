@@ -1,9 +1,9 @@
 #define NUM_DEVICES 4
-#define DELAY_MS 250
 #define push 7
+int DELAY_MS=250;
 int dataInPin = 11;
 int clkPin = 13;
-int loadPin = 3;
+int loadPin = 3; // marked as CS_PIN on MAX 7219
 int size=3;
 int blc_num;
 int x;
