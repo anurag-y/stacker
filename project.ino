@@ -13,7 +13,7 @@ bool sign=0;
 LedControl lc = LedControl(dataInPin, clkPin, loadPin, NUM_DEVICES);
 int x_pos=0;
 int minY_Next=9, minY1=9, flag=0;
-
+int score=0, high_score=0;
 int drawLine() {
   int y = random(6);
   int yStep = 1;
@@ -133,6 +133,9 @@ void coordinate_update(){
  }
 void reset(){
    clearAll();
+   score=x_pos;
+   if(score>high_score)
+   high_score=score;
    x_pos=-1;
    flag=0;
    minY1=9;
@@ -149,9 +152,12 @@ void printStates(){
   Serial.print(minY_Next);
   Serial.print("\tx_pos: ");
   Serial.print(x_pos);
+  Serial.print("\tscore: ");
+  Serial.print(score);
+  Serial.print("\tHIGH_SCORE: ");
+  Serial.print(high_score);
   Serial.print("\tsize: ");
   Serial.println(size);
-
  }
 void onCode(int currY){
   if(blc_num==1 && size ==4)
@@ -182,20 +188,20 @@ void setup() {
  }
 
 void loop() {
-  printStates();
-  game2();
- // status_display();
-  print_binary(123);
-  Serial.println("Out of game2");
+ printStates();
+ game2();
+ status_display();
  }
 
-// void status_display()
-//  {
-//    print_binary();
-//  }
+ void status_display()
+ {
+   print_binary(3, high_score);
+   print_binary(2, score);
+   delay(2000);
+   clearAll();
+ }
 
-void print_binary(int number)
-{
+void print_binary(int div, int number){
   bool binaryArray[8];
   for (int i = 7; i >= 0; i--){
     if (number >= pow(2, i)) {
@@ -206,10 +212,19 @@ void print_binary(int number)
     }
   }
   Serial.print("Binary Array: ");
-  for (int i = 0; i < 8; i++) {
+   for (int i = 0; i < 8; i++) {
     Serial.print(binaryArray[i]);
   }
-}
+  for(int i=0;i<8; i++){
+    for(int j=1;j<7;j++){
+      if(binaryArray[i])
+      lc.setLed(div, 7-i ,j , true);
+       else
+      lc.setLed(div, 7-i ,j , false);
+    }
+  }
+  
+ }
 
 
 
