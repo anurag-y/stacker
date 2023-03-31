@@ -1,6 +1,7 @@
 #define NUM_DEVICES 4
-#define push 7
-int DELAY_MS=250;
+#define push 2
+#define buzzerPin 7
+int DELAY_MS=450;
 int dataInPin = 11;
 int clkPin = 13;
 int loadPin = 3; // marked as CS_PIN on MAX 7219
@@ -14,8 +15,13 @@ LedControl lc = LedControl(dataInPin, clkPin, loadPin, NUM_DEVICES);
 int x_pos=0;
 int minY_Next=9, minY1=9, flag=0;
 int score=0, high_score=0;
+volatile bool buttonPressed=0;
+
+void buttonPressed_check(){
+  buttonPressed = true;
+}
 int drawLine() {
-  int y = random(6);
+  int y = random(8-size);
   int yStep = 1;
   bool down = true;
   bool stop = false;
@@ -49,19 +55,21 @@ int drawLine() {
     delay(DELAY_MS);
     
     // Check for button press to stop
-    if (digitalRead(push) == HIGH) {
+    
+    if (buttonPressed) {
       stop = true;
       lowestY = y;
       if(flag==1)
       {
         onCode(lowestY);
         keepon();
+        delay(100);
+        
       }
+      buttonPressed = false;
       
-    }    
-    
+    }
   }
-
   return lowestY;
  }
 
@@ -83,7 +91,6 @@ void clearAll(){
  }
 
 void playMusic(int musicType) {
-  int buzzerPin = 2;
   int note;
   int duration;
 
@@ -112,10 +119,12 @@ void game2(){
      minY_Next=minY1;
      onCode(minY_Next);
      keepon();
+     delay(200);
     }
    else {
      minY_Next = drawLine();
-    } 
+    }
+   delay(200);
    x_pos++;
 
    if(x_pos==32) {
@@ -156,6 +165,8 @@ void printStates(){
   Serial.print(score);
   Serial.print("\tHIGH_SCORE: ");
   Serial.print(high_score);
+    Serial.print("\tbuttonPressed: ");
+  Serial.print(buttonPressed);
   Serial.print("\tsize: ");
   Serial.println(size);
  }
@@ -184,6 +195,7 @@ void setup() {
     lc.setIntensity(y, 8);
     lc.clearDisplay(y);
   }
+  attachInterrupt(digitalPinToInterrupt(push), buttonPressed_check, RISING);
   Serial.begin(9600);
  }
 
