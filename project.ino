@@ -4,9 +4,10 @@ int DELAY_MS=250;
 int dataInPin = 11;
 int clkPin = 13;
 int loadPin = 3; // marked as CS_PIN on MAX 7219
-int size=3;
+int size=4;
 int blc_num;
 int x;
+bool game_on=true;
 bool sign=0;
 #include <LedControl.h>
 LedControl lc = LedControl(dataInPin, clkPin, loadPin, NUM_DEVICES);
@@ -34,8 +35,8 @@ int drawLine() {
     // Update the x_pos-coordinate
     if (down) {
       y += yStep;
-      if (y >= 5) {
-        y = 5;
+      if (y >= 7 -size+1) {
+        y = 7 -size+1;
         down = false;
       }
     } else {
@@ -101,29 +102,30 @@ void playMusic(int musicType) {
   noTone(buzzerPin); // Stop the buzzer
  }
 
-void game2()
- {
-  if(flag==0)
-  {
-    minY1 = drawLine();
-    flag=1;
-    minY_Next=minY1;
-    onCode(minY_Next);
-    keepon();
+void game2(){
+  game_on=true;
+  while(game_on) {
+    coordinate_update();
+    if(flag==0){
+     minY1 = drawLine();
+     flag=1;
+     minY_Next=minY1;
+     onCode(minY_Next);
+     keepon();
+    }
+   else {
+     minY_Next = drawLine();
+    } 
+   x_pos++;
+
+   if(x_pos==32) {
+     x_pos=0;
+     playMusic(1);
+     reset();
+     game_on=false;
+    }
   }
-  else 
- {
-   minY_Next = drawLine();
- } 
- x_pos++;
- 
-  
-  if(x_pos==32)
-  {
-    x_pos=0;
-    playMusic(1);
-    reset();
-  }
+  return;
  }
 void coordinate_update(){
   x=7-(x_pos%8);
@@ -135,7 +137,7 @@ void reset(){
    flag=0;
    minY1=9;
    minY_Next=9;
-   size=3;
+   size=4;
    sign=0;
    playMusic(0); 
  }
@@ -152,6 +154,8 @@ void printStates(){
 
  }
 void onCode(int currY){
+  if(blc_num==1 && size ==4)
+  size = 3;
   if(blc_num==2 && size ==3)
   size = 2;
   if(blc_num==3 && size ==2)
@@ -161,8 +165,11 @@ void onCode(int currY){
     if(minY1<currY)
     minY1=currY;
   }
-  else
-  reset(); 
+  else{
+    game_on=false;    
+    reset(); 
+  }
+  return;
  }
 void setup() {
   pinMode(push, INPUT);  
@@ -174,15 +181,35 @@ void setup() {
   Serial.begin(9600);
  }
 
-
-
-
 void loop() {
   printStates();
-  coordinate_update();
-  game2(); 
-
+  game2();
+ // status_display();
+  print_binary(123);
+  Serial.println("Out of game2");
  }
+
+// void status_display()
+//  {
+//    print_binary();
+//  }
+
+void print_binary(int number)
+{
+  bool binaryArray[8];
+  for (int i = 7; i >= 0; i--){
+    if (number >= pow(2, i)) {
+      binaryArray[7-i] = true;
+      number -= pow(2, i);
+    } else {
+      binaryArray[7-i] = false;
+    }
+  }
+  Serial.print("Binary Array: ");
+  for (int i = 0; i < 8; i++) {
+    Serial.print(binaryArray[i]);
+  }
+}
 
 
 
