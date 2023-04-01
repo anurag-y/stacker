@@ -158,7 +158,7 @@ void coordinate_update(){
  }
 void reset(){
    clearAll();
-   score=x_pos;
+   score=x_pos*32 -1;
    if(score>high_score)
    high_score=score;
    x_pos=-1;
