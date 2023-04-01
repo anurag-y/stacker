@@ -1,22 +1,39 @@
+#include <LedControl.h>
 #define NUM_DEVICES 4
 #define push 2
 #define buzzerPin 7
-int DELAY_MS=450;
-int dataInPin = 11;
-int clkPin = 13;
-int loadPin = 3; // marked as CS_PIN on MAX 7219
-int size=4;
-int blc_num;
-int x;
-bool game_on=true;
-bool sign=0;
-#include <LedControl.h>
-LedControl lc = LedControl(dataInPin, clkPin, loadPin, NUM_DEVICES);
-int x_pos=0;
-int minY_Next=9, minY1=9, flag=0;
-int score=0, high_score=0;
-volatile bool buttonPressed=0;
 
+int DELAY_MS=400, size=4, blc_num=0, x=0;
+int dataInPin = 11, clkPin = 13, loadPin = 3; //loadPin aka CS_PIN
+bool game_on=true, sign =true;
+volatile bool buttonPressed=0;
+int minY_Next=9, minY1=9, flag=0, x_pos=0, score=0, high_score=0;
+int level=0;
+LedControl lc = LedControl(dataInPin, clkPin, loadPin, NUM_DEVICES);
+
+
+void set_level(){
+  unsigned long startTime=millis()/1000;
+  unsigned long timeElapsed=0;
+  int i=0;
+    for(i; i<32 && !buttonPressed; i=i+4)
+    {
+      for(int j=1;j<7;j++){
+        for(int k=0;k<3;k++)
+         lc.setLed(i/8, j, 7-((i+k)%8), true);
+      }
+      delay(1000);
+    }
+  if(buttonPressed==true)
+  level= i/4;
+  else if(level<8)
+  level++;
+  else level=8;
+  buttonPressed=false;
+  DELAY_MS=550 - level * 50;
+  clearAll();
+  return;
+ }
 void buttonPressed_check(){
   buttonPressed = true;
 }
@@ -63,8 +80,7 @@ int drawLine() {
       {
         onCode(lowestY);
         keepon();
-        delay(100);
-        
+        delay(100);        
       }
       buttonPressed = false;
       
@@ -155,20 +171,20 @@ void reset(){
  }
 
 void printStates(){
-  Serial.print("MinY1: ");
-  Serial.print(minY1);
-  Serial.print("\tMinY_Next: ");
-  Serial.print(minY_Next);
-  Serial.print("\tx_pos: ");
-  Serial.print(x_pos);
-  Serial.print("\tscore: ");
-  Serial.print(score);
-  Serial.print("\tHIGH_SCORE: ");
-  Serial.print(high_score);
-    Serial.print("\tbuttonPressed: ");
-  Serial.print(buttonPressed);
-  Serial.print("\tsize: ");
-  Serial.println(size);
+  // Serial.print("MinY1: ");
+  // Serial.print(minY1);
+  // Serial.print("\tMinY_Next: ");
+  // Serial.print(minY_Next);
+  // Serial.print("\tx_pos: ");
+  // Serial.print(x_pos);
+  // Serial.print("\tscore: ");
+  // Serial.print(score);
+  // Serial.print("\tHIGH_SCORE: ");
+  // Serial.print(high_score);
+  Serial.print("\tlevel: ");
+  Serial.println(level);
+  // Serial.print("\tsize: ");
+  // Serial.println(size);
  }
 void onCode(int currY){
   if(blc_num==1 && size ==4)
@@ -200,15 +216,22 @@ void setup() {
  }
 
 void loop() {
+ set_level();
  printStates();
  game2();
  status_display();
  }
 
- void status_display()
- {
+void status_display() {
    print_binary(3, high_score);
    print_binary(2, score);
+   print_binary(1, level);
+   if(score==high_score)   {
+     for(int j=1;j<7;j++){
+        for(int k=1;k<7;k++)
+         lc.setLed(0, j, k, true);
+      }
+   }
    delay(2000);
    clearAll();
  }
@@ -222,10 +245,6 @@ void print_binary(int div, int number){
     } else {
       binaryArray[7-i] = false;
     }
-  }
-  Serial.print("Binary Array: ");
-   for (int i = 0; i < 8; i++) {
-    Serial.print(binaryArray[i]);
   }
   for(int i=0;i<8; i++){
     for(int j=1;j<7;j++){
