@@ -30,7 +30,7 @@ void set_level(){
   level++;
   else level=8;
   buttonPressed=false;
-  DELAY_MS=550 - level * 50;
+  DELAY_MS=450 - level * 50;
   clearAll();
   return;
  }
