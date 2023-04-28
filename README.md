@@ -22,3 +22,7 @@ This Stacker game project was made for a course project at my college.
 1. Players can choose level
 2. Display of score and heighest score at a given level
 3. Music by buzzer for clicks, WINs and losses.
+
+
+
+Credits: Music notes used from https://github.com/xitanggg/-Pirates-of-the-Caribbean-Theme-Song
